@@ -1,7 +1,7 @@
 #+nil
 (setf asdf:*central-registry* 
       #+win64 '("C:/Users/martin/Desktop/tmp/sb-andor2-win/")
-      #+linux '("/home/martin/stage/sb-andor2-win/"))
+      #+linux '("~/stage/sb-andor2-win/"))
 #+nil
 (require :sb-andor2-win)
 

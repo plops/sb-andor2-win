@@ -12,6 +12,10 @@
   (initialize* (sb-sys:int-sap 0))))
 
 #+nil
+(is-cooler-on*)
+
+
+#+nil
 (time
  (initialize))
 
@@ -19,6 +23,12 @@
 
 (defparameter *w* 512)
 (defparameter *h* 512)
+
+#+nil
+(initialize-512)
+
+#+nil
+(get-temperature-f*)
 
 (defun initialize-512 ()
   (initialize)
@@ -28,7 +38,7 @@
   (set-fastest-hs-speed)
   (set-trigger-mode 'internal)
   (set-exposure-time .00001)
-  (check (set-temperature* -5))
+  (check (set-temperature* -40))
   (check (cooler-on*))
   (set-image :xstart 1 :ystart 1 :xend *w* :yend *h*))
 
@@ -36,6 +46,7 @@
 		       :element-type '(unsigned-byte 16))))
   (defun acquire-512 ()
    (start-acquisition)
+   (sleep (/ 1 15.08))
    (loop while (eq 'DRV_ACQUIRING (get-status))
       do
 	(sleep .001)
@@ -52,6 +63,32 @@
 			     (get-temperature-f*) 
 			   b))))
 
+(setf *w* 512
+      *h* 512)
+#+nil
+(let ((buf (make-array (list 10000 *w* *h*)
+		       :element-type '(unsigned-byte 16))))
+  #+nil(start-acquisition)
+  #+nil(check
+   (wait-for-acquisition-time-out* 1200))
+  (format t "~a~%" (list (get-internal-real-time) 
+			 (get-all-images16 :arr buf)))
+  (setf *bla* buf)
+  nil)
+
+#+nil
+(get-size-of-circular-buffer*)
+#+nil
+(start-acquisition)
+#+nil
+(abort-acquisition)
+#+nil
+(get-number-available-images*)
+#+nil
+(get-status)
+#+nil
+(check
+ (free-internal-memory*))
 (let ((run-camera-p t))
   (defun stop-camera ()
       (setf run-camera-p nil))
@@ -84,7 +121,7 @@ is already allocated and can contain more data than needed)."
 			(= last valid-last))
 	     (break "warning: get-images16 didn't return expected number of images ~a~%" 
 		    (list first last valid-first valid-last)))
-	   (check (free-internal-memory*))
+#+nil	   (check (free-internal-memory*))
 	   (values n arr)))))))
 
 ;; 560
@@ -107,7 +144,6 @@ is already allocated and can contain more data than needed)."
 #+nil
 (initialize-512)
 #+nil
-
 (progn ;; kinetics series 
   (set-acquisition-mode 'kinetics)
   (set-exposure-time .000001)
@@ -121,10 +157,11 @@ is already allocated and can contain more data than needed)."
   (check (set-frame-transfer-mode* 0))
   (set-fastest-hs-speed)
   (set-trigger-mode 'internal)
-  (check (set-temperature* -5))
+  (check (set-temperature* -40))
   (check (cooler-on*))
-  (setf *w* 16
-	*h* 16)
+  (setf *w* 11
+	*h* 1)
+  (set-isolated-crop-mode* 1 *h* *w* 1 1)
   (set-image :xstart 1 :ystart 1 :xend *w* :yend *h*)
   (get-acquisition-timings))
 
@@ -139,7 +176,7 @@ is already allocated and can contain more data than needed)."
 #+nil
 (get-temperature-f*)
 #+nil
-(check (set-temperature* -15))
+(check (set-temperature* -40))
 #+nil
 (check
  (cooler-on*))
