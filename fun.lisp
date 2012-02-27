@@ -392,8 +392,7 @@ unsigned int PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage,
 					       type))))
 		     parms))))
 
-(defparameter *s*
- '("GetAcquiredData16" (("arr" (* ("WORD"))) ("size" ("unsigned" "long")))))
+
 
 ;; i want to convert the functions names to look like this:
 ;; GetAcquiredData16 -> get-acquired-data16
@@ -410,7 +409,7 @@ unsigned int PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage,
 ;; current character
 
 
-(defun lispify-name (m)
+(defun lispify-camelcase (m)
   (let ((res nil)
 	(n (length m)))
     (dotimes (i n)
@@ -424,12 +423,12 @@ unsigned int PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage,
 	      (upper-case-p (char m (- i 2)))
 	      (upper-case-p (char m (- i 1)))
 	      (lower-case-p (char m i)))
-	 (pop res)
-	 (push #\- res)
+	 (pop res) ;; remove last big letter from stack
+	 (push #\- res) ;; and put a hyphen in front
 	 (push (char m (- i 1)) res)
 	 (push (char m i) res))
 	(t (push (char m i) res))))
-    (string-downcase
+    (string-upcase
      (make-array (length res) :element-type 'character :initial-contents (reverse res)))))
 
 #+nil
@@ -439,8 +438,36 @@ unsigned int PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage,
 		 "GetCYMGShift"
 		 "GetDDGIOC")
      collect
-     (lispify-name i))
+     (lispify-camelcase i))
+
+(defparameter *s*
+ '("GetAcquiredData16" (("arr" (* ("WORD"))) ("size" ("unsigned" "long")))))
+
+;; this is how it is supposed to look like:
+#+nil
+(sb-alien:define-alien-routine ("GetAcquiredData16" get-acquired-data16) 
+    unsigned-int
+  (arr (sb-alien:* word))
+  (size sb-alien:unsigned-long))
+
+(let ((bla '("1" "2")))
+ (equal (car bla) "1"))
+
+(defun string->type (ls)
+  (cond 
+    ((equal (car ls) '*)
+     (list '* (string->type (car (cdr ls)))))
+    ((equal '("WORD") ls) 'word)
+    ((equal '("unsigned" "long") ls) 'unsigned-long)
+	(t (error "unknown type: ~a" ls))))
 
 (defun generate-function-definition (spec)
-  (destructuring-bind (c-name parms) spec
-    ))
+  (destructuring-bind (c-name params) spec
+    `(sb-alien:define-alien-routine (,c-name ,(intern (lispify-camelcase c-name)))
+	 ,@(loop for p in params collect
+		(destructuring-bind (name type) p
+		    (list (intern (string-upcase name))
+			  (string->type type)))))))
+
+#+nil
+(generate-function-definition *s*)
