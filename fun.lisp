@@ -388,6 +388,59 @@ unsigned int PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage,
 	     (mapcar #'(lambda (p) (destructuring-bind (name type) p
 				     (list name 
 					   (if (string= "*" (car (last type)))
-					       (append (list 'sb-alien:*) (butlast type))
+					       (list 'sb-alien:* (butlast type))
 					       type))))
 		     parms))))
+
+(defparameter *s*
+ '("GetAcquiredData16" (("arr" (* ("WORD"))) ("size" ("unsigned" "long")))))
+
+;; i want to convert the functions names to look like this:
+;; GetAcquiredData16 -> get-acquired-data16
+;; CoolerOFF -> cooler-off
+;; GetAllDMAData -> get-all-dma-data
+;; GetCYMGShift -> get-cymg-shift
+;; GetDDGIOC -> get-ddgioc
+
+;; if not at first character and character changes case from lower to
+;; upper, insert hyphen
+
+;; if not at first or second character and character changes from
+;; upper to lower and there are at least 2 upper, insert hyphen before
+;; current character
+
+
+(defun lispify-name (m)
+  (let ((res nil)
+	(n (length m)))
+    (dotimes (i n)
+      (cond 
+	((and (< 0 i)
+	      (lower-case-p (char m (1- i)))
+	      (upper-case-p (char m i)))
+	 (push #\- res)
+	 (push (char m i) res))
+	((and (< 1 i)
+	      (upper-case-p (char m (- i 2)))
+	      (upper-case-p (char m (- i 1)))
+	      (lower-case-p (char m i)))
+	 (pop res)
+	 (push #\- res)
+	 (push (char m (- i 1)) res)
+	 (push (char m i) res))
+	(t (push (char m i) res))))
+    (string-downcase
+     (make-array (length res) :element-type 'character :initial-contents (reverse res)))))
+
+#+nil
+(loop for i in '("GetAcquiredData16"
+		 "CoolerOFF"
+		 "GetAllDMAData"
+		 "GetCYMGShift"
+		 "GetDDGIOC")
+     collect
+     (lispify-name i))
+
+(defun generate-function-definition (spec)
+  (destructuring-bind (c-name parms) spec
+    ))
