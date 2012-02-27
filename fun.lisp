@@ -341,8 +341,8 @@ Filter_SetAveragingFactor(int averagingFactor)
 Filter_GetAveragingFactor(int * averagingFactor)
 PostProcessNoiseFilter(at_32 * pInputImage, at_32 * pOutputImage, int iOutputBufferSize, int iBaseline, int iMode, float fThreshold, int iHeight, int iWidth)
 PostProcessCountConvert(at_32 * pInputImage, at_32 * pOutputImage, int iOutputBufferSize, int iNumImages, int iBaseline, int iMode, int iEmGain, float fQE, float fSensitivity, int iHeight, int iWidth)
-unsigned int PostProcessPhotonCounting(at_32 * pInputImage, at_32 * pOutputImage, int iOutputBufferSize, int iNumImages, int iNumframes, int iNumberOfThresholds, float * pfThreshold, int iHeight, int iWidth)
-unsigned int PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage, int iOutputBufferSize, int iNumImages, int iAveragingFilterMode, int iHeight, int iWidth, int iFrameCount, int iAveragingFactor)
+PostProcessPhotonCounting(at_32 * pInputImage, at_32 * pOutputImage, int iOutputBufferSize, int iNumImages, int iNumframes, int iNumberOfThresholds, float * pfThreshold, int iHeight, int iWidth)
+PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage, int iOutputBufferSize, int iNumImages, int iAveragingFilterMode, int iHeight, int iWidth, int iFrameCount, int iAveragingFactor)
 ")
 
 ;; split at newlines
@@ -450,24 +450,48 @@ unsigned int PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage,
   (arr (sb-alien:* word))
   (size sb-alien:unsigned-long))
 
-(let ((bla '("1" "2")))
- (equal (car bla) "1"))
-
 (defun string->type (ls)
   (cond 
-    ((equal (car ls) '*)
-     (list '* (string->type (car (cdr ls)))))
-    ((equal '("WORD") ls) 'word)
-    ((equal '("unsigned" "long") ls) 'unsigned-long)
-	(t (error "unknown type: ~a" ls))))
+    ((equal (car ls) '*) (list '* (string->type (car (cdr ls)))))
+    ((equal '("char") ls) 'char)
+    ((or (equal '("unsigned" "char") ls)
+	 (equal '("BYTE") ls)) 'unsigned-char)
+
+    ((or (equal '("WORD") ls) ;; from windef.h 
+	 (equal '("unsigned" "short") ls)) 'unsigned-short)
+
+    ((equal '("short") ls) 'short)
+    ((equal '("unsigned" "int") ls) 'unsigned-int)
+    ((equal '("int") ls) 'int)
+
+    ((or (equal '("at_u32") ls)
+	 (equal '("unsigned" "long") ls)
+	 (equal '("DWORD") ls)) 'unsigned-long)
+    ((or (equal '("at_32") ls)
+	 (equal '("long") ls)) 'long)
+
+    ((or (equal '("at_u64") ls)
+	 (equal '("unsigned" "long" "long") ls)) 'unsigned-long-long)
+    ((or (equal '("at_64") ls)
+	 (equal '("long" "long") ls)) 'long-long)
+
+    ((equal '("float") ls) 'float)
+    ((equal '("double") ls) 'double)
+    
+    (t (format t "unknown type: ~a~%" ls))))
 
 (defun generate-function-definition (spec)
   (destructuring-bind (c-name params) spec
-    `(sb-alien:define-alien-routine (,c-name ,(intern (lispify-camelcase c-name)))
+    `(sb-alien:define-alien-routine (,c-name ,(intern (lispify-camelcase (format nil "~a*" c-name))))
+	 'unsigned-int
 	 ,@(loop for p in params collect
 		(destructuring-bind (name type) p
-		    (list (intern (string-upcase name))
-			  (string->type type)))))))
+		  (when (string->type type)
+		   (list (intern (string-upcase name))
+			 (string->type type))))))))
 
 #+nil
 (generate-function-definition *s*)
+
+(defparameter *fun-defs* 
+  (mapcar #'generate-function-definition (butlast *funs-parm6*)))
