@@ -771,5 +771,27 @@ PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage, int iOutputB
     AC_EMGAIN_LINEAR12 4
     AC_EMGAIN_REAL12 8))
 
-(loop for i below (length *consts*) by 2 collect
-     `(defconstant ,(elt *consts* i) ,(elt *consts* (1+ i)))) 
+;; separate names and values
+(defparameter *const-val*
+  (loop for i below (length *consts*) by 2 collect
+       `(,(elt *consts* i) ,(elt *consts* (1+ i))))) 
+
+;; constant definitions
+(defparameter *const-defs*
+  (loop for i in *const-val* collect
+       (destructuring-bind (name val) i
+	 `(defconstant ,name ,val))))
+
+;; select all constants beginning with DRV_
+(defparameter *drv-consts* 
+  (loop for e in *const-val* 
+     when (string< "DRV_" (symbol-name (car e)))
+     collect e))
+
+;; write all constants beginning with DRV_  into hash table
+(progn
+  (defparameter *drv-hash* (make-hash-table))
+  (dolist (e *drv-consts*)
+    (destructuring-bind (name val) e
+	(setf (gethash val *drv-hash*) name))))
+
