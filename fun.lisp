@@ -373,3 +373,21 @@ unsigned int PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage,
   (loop for (f parms) in *funs-parm3* collect
        (list f (mapcar #'(lambda (s) (string-left-trim '(#\Space) s))  parms))))
 
+;; split each of the parameters at space and move the last element (name) to the front
+(defparameter *funs-parm5*
+  (loop for (f parms) in *funs-parm4* collect
+       (list f (mapcar #'(lambda (p) (let ((spli (split-sequence:SPLIT-SEQUENCE #\Space p)))
+				       (list (car (last spli)) (butlast spli))))
+		       parms))))
+
+;; if the last element of the type list is "*" write sb-alien:* in front
+(defparameter *funs-parm6*
+  (loop for (f parms) in *funs-parm5* collect
+       
+       (list f
+	     (mapcar #'(lambda (p) (destructuring-bind (name type) p
+				     (list name 
+					   (if (string= "*" (car (last type)))
+					       (append (list 'sb-alien:*) (butlast type))
+					       type))))
+		     parms))))
