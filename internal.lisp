@@ -59,11 +59,11 @@
 (defun set-acquisition-mode (&optional (mode 'single-scan))
   (check (set-acquisition-mode* 
 	  (ecase mode
-	    ('single-scan 1)
-	    ('accumulate 2)
-	    ('kinetics 3)
-	    ('fast-kinetics 4)
-	    ('run-till-abort 5)))))
+	    (single-scan 1)
+	    (accumulate 2)
+	    (kinetics 3)
+	    (fast-kinetics 4)
+	    (run-till-abort 5)))))
 
 #+nil
 (set-acquisition-mode)
@@ -133,3 +133,71 @@
 
 #+nil
 (set-baseline-clamp)
+
+(defun shutdown ()
+  (let* ((caps (get-capabilities))
+	 (temp-p (/= 0 (logand (getf caps 'set) 
+			       AC_SETFUNCTION_TEMPERATURE))))
+    (when temp-p
+      (check (cooler-off*)))
+    (check (shut-down*))))
+
+(defun set-trigger-mode (&optional (mode 'internal))
+  (let* ((m (ecase mode
+	      (internal 0)
+	      (external 1)
+	      (external-start 6)
+	      (bulb 7)
+	      (external-fvb-em 9)
+	      (software 10))))
+    (when (= DRV_INVALID_MODE 
+	     (is-trigger-mode-available* m))
+      (break "trigger mode ~a isn't supported." mode))
+    (check (set-trigger-mode* m)))))
+
+#+nil
+(set-trigger-mode)
+
+(defun get-maximum-binning (&optional (mode 'image))
+  (let ((m (ecase mode
+	     ('full-vertical-binning 0)
+	     ('muli-track 1)
+	     ('random-track 2)
+	     ('single-track 3)
+	     ('image 4))))
+    (with-alien ((w int)
+		 (h int))
+     (check (get-maximum-binning* m 0 (addr w)))
+     (check (get-maximum-binning* m 1 (addr h)))
+     (list h w))))
+
+#+nil
+(get-maximum-binning)
+
+(defun get-maximum-exposure ()
+  (with-alien ((exp_s float))
+    (check (get-maximum-exposure* (addr exp_s)))
+    exp_s))
+
+#+nil
+(get-maximum-exposure)
+
+(defun set-image (&key (bin-h 1) (bin-w bin-h)
+		  xstart xend ystart yend)
+  (destructuring-bind (hh ww) (get-detector)
+   (destructuring-bind (bh bw)
+       (get-maximum-binning 'image)
+     (let ((bbw (min bw (max 1 bin-w)))
+	   (bbh (min bh (max 1 bin-h))))
+       (unless xstart (setf xstart 1))
+       (unless xend (setf xend ww))
+       (unless ystart (setf ystart 1))
+       (unless yend (setf yend hh))
+       ;; first pixel is 1 (for xstart)
+       ;; xend can be at most ww 
+       (check (set-image* bbw bbh 
+			  xstart xend
+			  ystart yend))))))
+
+#+nil
+(set-image)
