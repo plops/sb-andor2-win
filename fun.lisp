@@ -359,18 +359,25 @@ PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage, int iOutputB
   (loop for (f parm) in *funs-parm* collect
        (list f (split-sequence:split-sequence #\, parm))))
 
-;; remove ) at the end of parameter list
+;; remove ) at the end of parameter list 
 (defparameter *funs-parm3*
   (loop for (f parm) in *funs-parm2* collect
        (flet ((remove-trailing-parenthesis (ls)
-		(if (= 1 (length ls))
-		    nil ;; replace "void" with nil (list (first (split-sequence:SPLIT-SEQUENCE #\) (first ls))))
-		    (append (butlast ls) (list (car (split-sequence:SPLIT-SEQUENCE #\) (car (last ls)))))))))
+		(append (butlast ls) (list (car (split-sequence:SPLIT-SEQUENCE #\) (car (last ls))))))))
 	 (list f (remove-trailing-parenthesis parm)))))
+
+;; turn void parameters into nil
+(defparameter *funs-parm3b*
+  (loop for (f parm) in *funs-parm3* collect
+       (flet ((remove-void (ls)
+		(if (equal ls '("void"))
+		    nil
+		    ls)))
+	 (list f (remove-void parm)))))
 
 ;; remove leading space at each parameter
 (defparameter *funs-parm4*
-  (loop for (f parms) in *funs-parm3* collect
+  (loop for (f parms) in *funs-parm3b* collect
        (list f (mapcar #'(lambda (s) (string-left-trim '(#\Space) s))  parms))))
 
 ;; split each of the parameters at space and move the last element (name) to the front
@@ -828,6 +835,9 @@ PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage, int iOutputB
 		   :direction :output
 		   :if-exists :supersede
 		   :if-does-not-exist :create)
+  
+  (format s "(in-package :sb-andor2-win-internal)
+ (defparameter *andor2-lib* (load-shared-object \"atmcd64d.dll\"))~%")
   (format s "~{~a~%~}" *const-defs*)
   (format s "~{~a~%~}" *fun-defs*)
   (format s "~a" (hash-def *drv-consts*)))
