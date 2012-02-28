@@ -99,3 +99,37 @@
 
 #+nil
 (set-vs-speed)
+
+(defun set-fastest-hs-speed (&key em)
+  (let ((conv-p (if em 0 1)))
+    (let ((stemp 0s0)
+	  (fast-ad 0)
+	  (fast-ind 0))
+      (with-alien ((channels int)
+		   (ind int)
+		   (speed float))
+	(check (get-number-ad-channels* (addr channels)))
+	(dotimes (c channels)
+	  (check (get-number-hs-speeds* c conv-p (addr ind)))
+	  (dotimes (i ind)
+	    (check (get-hs-speed* c conv-p i (addr speed)))
+	    (when (< stemp speed)
+	      (setf stemp speed
+		    fast-ad c
+		    fast-ind i)))))
+      (check (set-ad-channel* fast-ad))
+      (check (set-hs-speed* conv-p fast-ind))
+      stemp)))
+
+#+nil
+(set-fastest-hs-speed)
+
+(defun set-baseline-clamp ()
+  (let* ((caps (get-capabilities))
+	 (base-p (/= 0 (logand (getf caps 'set) 
+			       AC_SETFUNCTION_BASELINECLAMP))))
+    (when base-p
+      (check (set-baseline-clamp* 1)))))
+
+#+nil
+(set-baseline-clamp)
