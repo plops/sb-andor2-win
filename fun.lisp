@@ -490,6 +490,8 @@ PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage, int iOutputB
     ((equal '("float") ls) 'float)
     ((equal '("double") ls) 'double)
     
+    ((equal '("AndorCapabilities") ls) 'andorcaps)
+
     (t (format t "unknown type: ~a~%" ls)
        nil)))
 
@@ -497,6 +499,9 @@ PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage, int iOutputB
 (string->type '("double"))
 #+nil
 (string->type '("ColorMosaicInfo"))
+#+nil
+(string->type '("AndorCapabilities"))
+
 
 (defun generate-function-definition (spec)
   (destructuring-bind (c-name params) spec
@@ -507,11 +512,13 @@ PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage, int iOutputB
 		    (return-from ensure-types-are-known nil)))
 	     t))
       (when (ensure-types-are-known)
-        `(sb-alien:define-alien-routine (,(format nil "~s" c-name) ,(intern (lispify-camelcase (format nil "~a*" c-name))))
+        `(sb-alien:define-alien-routine
+	     (,(format nil "~s" c-name)
+	       ,(intern (lispify-camelcase (format nil "~a*" c-name))))
 	     unsigned-int
-	  ,@(loop for (name type) in params collect
-		 (list (intern (string-upcase (lispify-camelcase name)))
-		       (string->type type))))))))
+	   ,@(loop for (name type) in params collect
+		  (list (intern (string-upcase (lispify-camelcase name)))
+			(string->type type))))))))
 
 
 #+nil

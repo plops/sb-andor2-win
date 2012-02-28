@@ -10,15 +10,11 @@
 	      (unsigned Camera-Type "ULONG" "ulCameraType")
 	      (unsigned Pixel-Mode "ULONG" "ulPixelMode")
 	      (unsigned Set-Functions "ULONG" "ulSetFunctions")
-	      (unsigned Get-Functions "ULONG" "ul3GetFunctions")
+	      (unsigned Get-Functions "ULONG" "ulGetFunctions")
 	      (unsigned Features "ULONG" "ulFeatures")
 	      (unsigned PCI-Card "ULONG" "ulPCICard")
 	      (unsigned EMGain-Capability "ULONG" "ulEMGainCapability")
 	      (unsigned FT-Read-Modes "ULONG" "ulFTReadModes")
-	      ))
+	      )))
 
- (:function abort-acquisition* ("AbortAcquisition" unsigned-int))
-)
-
-(:function ,lname (,name unsigned-int))
 
