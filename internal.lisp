@@ -153,7 +153,7 @@
     (when (= DRV_INVALID_MODE 
 	     (is-trigger-mode-available* m))
       (break "trigger mode ~a isn't supported." mode))
-    (check (set-trigger-mode* m)))))
+    (check (set-trigger-mode* m))))
 
 #+nil
 (set-trigger-mode)
@@ -201,3 +201,24 @@
 
 #+nil
 (set-image)
+
+(defun start-acquisition ()
+  (check (start-acquisition*)))
+
+#+nil
+(start-acquisition)
+
+(defun get-most-recent-image ()
+ (destructuring-bind (h w) (get-detector)
+   (let ((a (make-array (list h w)
+			:element-type '(unsigned-byte 16))))
+     (sb-sys:with-pinned-objects (a)
+       (check (get-most-recent-image16* 
+	       (sb-sys:vector-sap 
+		(sb-ext:array-storage-vector a))
+	       (* h w))))
+     a)))
+
+#+nil
+(defparameter *bla*
+ (get-most-recent-image))
