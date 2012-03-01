@@ -222,3 +222,6 @@
 #+nil
 (defparameter *bla*
  (get-most-recent-image))
+
+#+nil
+(shutdown)
