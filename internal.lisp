@@ -202,14 +202,20 @@
 #+nil
 (set-image)
 
+#+nil
+(set-image :xstart 1 :ystart 1 :xend 512 :yend 512)
+
 (defun start-acquisition ()
   (check (start-acquisition*)))
 
 #+nil
 (start-acquisition)
 
+#+nil
+(check (abort-acquisition*))
+
 (defun get-most-recent-image ()
- (destructuring-bind (h w) (get-detector)
+ (destructuring-bind (h w) (list 512 512)
    (let ((a (make-array (list h w)
 			:element-type '(unsigned-byte 16))))
      (sb-sys:with-pinned-objects (a)
