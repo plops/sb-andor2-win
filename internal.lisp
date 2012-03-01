@@ -230,4 +230,15 @@
  (get-most-recent-image))
 
 #+nil
+(check
+ (set-exposure-time* .1))
+
+#+nil
+(dotimes (i 100)
+  (start-acquisition)
+  (sleep .2)
+  (defparameter *bla*
+    (get-most-recent-image)))
+
+#+nil
 (shutdown)

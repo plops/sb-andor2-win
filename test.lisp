@@ -101,7 +101,7 @@
     ;;(gl:disable gl:+normalize+)
     
     (gl:with-push-matrix
-      (gl:rotate-f rot 0 0 1)
+      ;(gl:rotate-f rot 0 0 1)
       (gl:material-fv gl:+front+ gl:+ambient-and-diffuse+ 
 		      (make-array 4 :initial-element 1s0 
 				  :element-type 'single-float))
@@ -130,7 +130,7 @@
 	(gl:matrix-mode gl:+color+)
 	(gl:load-identity)
 	(gl:translate-f -4.5 0 0)
-	(gl:scale-f 680 1 1)
+	(gl:scale-f 380 1 1)
 	
 	(gl:matrix-mode gl:+modelview+)
 
@@ -155,7 +155,7 @@
 
 	(gl:with-begin gl:+quads+
 	  (dotimes (j h)
-	    (let ((d 0;-.1s0
+	    (let ((d  -.1s0
 		    ))
 	      (dotimes (i w)
 		(labels ((c (a b)
