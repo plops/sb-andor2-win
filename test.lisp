@@ -65,7 +65,8 @@
 			   (1 1 1) (0 0 1) (0 1 0)) do
 	 (gl:vertex-3f x y z))))
 
-(let ((rot 0))
+(let ((rot 0)
+      (forthdd-number 0))
   (defun draw ()
     (destructuring-bind (w h) (glfw:get-window-size)
       (setf h (max h 1))
@@ -89,7 +90,7 @@
     (count-fps)
     (gl:line-width 3)
     (gl:color-3f 1 1 1)
-    (gl:enable gl:+lighting+)
+    (gl:disable gl:+lighting+)
     (gl:enable gl:+depth-test+)
     (gl:enable gl:+light0+)
     (gl:shade-model gl:+flat+)
@@ -98,6 +99,10 @@
 
     ;;(gl:disable gl:+normalize+)
     
+    (incf forthdd-number)
+    (when (< 39 forthdd-number)
+      (setf forthdd-number 0))
+
     (gl:with-push-matrix
       ;(gl:rotate-f rot 0 0 1)
       (gl:material-fv gl:+front+ gl:+ambient-and-diffuse+ 
@@ -108,7 +113,12 @@
 	     (w h)
 	     (ww 32)
 	     (hh 32)
-	     (img and::*bla*
+	     (img (progn (forthdd::forthdd-talk 
+			  #x23 
+			  (list forthdd-number))
+			 (and::start-acquisition)
+			 (and::wait-for-acquisition*)
+			 (and::get-most-recent-image))
 	       #+nil (make-array (list hh ww) :element-type '(unsigned-byte 16)))
 	     (objs (make-array 1 :element-type '(unsigned-byte 32))))
 	(gl:gen-textures (length objs) objs)
@@ -127,7 +137,7 @@
 
 	(gl:matrix-mode gl:+color+)
 	(gl:load-identity)
-	(gl:scale-f 23 1 1)
+	(gl:scale-f 100 1 1)
 	(gl:translate-f (- (/ 534s0 (expt 2 16))) 0 0)
 	
 	(gl:matrix-mode gl:+modelview+)
@@ -145,11 +155,7 @@
 	(gl:scale-f s s s)
 	(gl:translate-f (* w -.5) (* h -.5) .1)
 	
-	#+nil
-	(progn
-	 (gl-ext:scan-available-extensions)
-	 (defparameter *bla* (gl-ext:available-extensions))
-	 (defparameter *bla2* (gl:get-string gl:+extensions+)))
+
 
 	(gl:with-begin gl:+quads+
 	  (dotimes (j h)
