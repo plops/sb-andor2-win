@@ -182,6 +182,25 @@
 #+nil
 (get-maximum-exposure)
 
+(defun get-acquisition-timings ()
+  (with-alien ((exposure float)
+	       (accumulate float)
+	       (kinetic float))
+    (check
+     (get-acquisition-timings* (addr exposure)
+			       (addr accumulate)
+			       (addr kinetic)))
+    (values exposure accumulate kinetic)))
+#+nil
+(get-acquisition-timings)
+
+(defun set-exposure-time (time_s)
+  (check (set-exposure-time* time_s))
+  (get-acquisition-timings))
+
+#+nil
+(set-exposure-time .02)
+
 (defun set-image (&key (bin-h 1) (bin-w bin-h)
 		  xstart xend ystart yend)
   (destructuring-bind (hh ww) (get-detector)
@@ -209,7 +228,10 @@
   (check (start-acquisition*)))
 
 #+nil
-(start-acquisition)
+(time
+ (progn
+   (start-acquisition)
+   (wait-for-acquisition*)))
 
 #+nil
 (check (abort-acquisition*))
