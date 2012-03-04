@@ -101,10 +101,10 @@
     (gl:with-push-matrix
       ;(gl:rotate-f rot 0 0 1)
       (gl:material-fv gl:+front+ gl:+ambient-and-diffuse+ 
-		      (make-array 4 :initial-element 1s0 
+		      (make-array 4 :initial-element .8s0 
 				  :element-type 'single-float))
-      (let* ((s .4)
-	     (h 60)
+      (let* ((s 2)
+	     (h 10)
 	     (w h)
 	     (ww 32)
 	     (hh 32)
@@ -127,8 +127,8 @@
 
 	(gl:matrix-mode gl:+color+)
 	(gl:load-identity)
-	(gl:translate-f -4.5 0 0)
-	(gl:scale-f 380 1 1)
+	(gl:scale-f 23 1 1)
+	(gl:translate-f (- (/ 534s0 (expt 2 16))) 0 0)
 	
 	(gl:matrix-mode gl:+modelview+)
 
@@ -153,7 +153,7 @@
 
 	(gl:with-begin gl:+quads+
 	  (dotimes (j h)
-	    (let ((d  -.1s0
+	    (let ((d 0 ; -.1s0
 		    ))
 	      (dotimes (i w)
 		(labels ((c (a b)

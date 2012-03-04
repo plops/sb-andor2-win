@@ -228,10 +228,13 @@
   (check (start-acquisition*)))
 
 #+nil
-(time
- (progn
-   (start-acquisition)
-   (wait-for-acquisition*)))
+(progn
+  (time
+   (prepare-acquisition*))
+ (time
+  (progn
+    (start-acquisition)
+    (wait-for-acquisition*))))
 
 #+nil
 (check (abort-acquisition*))
@@ -250,10 +253,6 @@
 #+nil
 (defparameter *bla*
  (get-most-recent-image))
-
-#+nil
-(check
- (set-exposure-time* .1))
 
 #+nil
 (dotimes (i 100)
