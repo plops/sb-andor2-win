@@ -390,7 +390,6 @@ PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage, int iOutputB
 ;; if the last element of the type list is "*" write sb-alien:* in front
 (defparameter *funs-parm6*
   (loop for (f parms) in *funs-parm5* collect
-       
        (list f
 	     (mapcar #'(lambda (p) (destructuring-bind (name type) p
 				     (list name 
@@ -842,9 +841,9 @@ PostProcessDataAveraging(at_32 * pInputImage, at_32 * pOutputImage, int iOutputB
 		   :direction :output
 		   :if-exists :supersede
 		   :if-does-not-exist :create)
-  
   (format s "(in-package :sb-andor2-win-internal)
- (defparameter *andor2-lib* (load-shared-object \"atmcd64d.dll\"))~%")
+ (defparameter *andor2-lib* #+win64 (load-shared-object \"atmcd64d.dll\")
+ #+linux (load-shared-object \"/usr/local/lib/libandor.so.2.91.30001.0\")~%")
   (format s "~{~a~%~}" *const-defs*)
   (format s "~{~a~%~}" *fun-defs*)
   (format s "~a" (hash-def *drv-consts*)))

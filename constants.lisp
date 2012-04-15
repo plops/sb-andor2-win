@@ -1,5 +1,7 @@
 ;;; -*- Lisp -*- - well, that's stretching a point.  code=data != data=code
-("C:/Users/martin/Desktop/tmp/sb-andor2-win/ATMCD32D.H")
+; #+win64 ("C:/Users/martin/Desktop/tmp/sb-andor2-win/win/ATMCD32D.H")
+; #+linux
+("/home/martin/stage/sb-andor2-win/linux/atmcdLXd.h")
 
 ((:structure andorcaps
  	     ("struct ANDORCAPS"

@@ -1,4 +1,6 @@
-(setf asdf:*central-registry* '("C:/Users/martin/Desktop/tmp/sb-andor2-win/"))
+(setf asdf:*central-registry* 
+      #+win64 '("C:/Users/martin/Desktop/tmp/sb-andor2-win/")
+      #+linux '("/home/martin/stage/sb-andor2-win/"))
 (require :sb-andor2-win)
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
@@ -113,7 +115,7 @@
 	     (w h)
 	     (ww 32)
 	     (hh 32)
-	     (img (progn (forthdd::forthdd-talk 
+	     (img #+nil (progn (forthdd::forthdd-talk 
 			  #x23 
 			  (list forthdd-number))
 			 (and::start-acquisition)
