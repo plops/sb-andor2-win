@@ -31,7 +31,7 @@
 (set-trigger-mode 'internal)
 
 #+nil
-(set-acquisition-mode 'kinetics)
+(set-acquisition-mode 'single-scan)
 
 #+nil
 (start-acquisition)
@@ -39,19 +39,40 @@
 #+nil
 (get-temperature-f*)
 
+#+nil
+(check (set-temperature* -5))
+#+nil
+(check
+ (cooler-on*))
+
+
+
 (defun get-status ()
   (multiple-value-bind (err stat) (get-status*)
     (unless (= err DRV_SUCCESS)
       (break "error: ~d ~a" err (lookup-error err)))
     (lookup-error stat)))
-#+nil
-(get-status)
-#+nil
-(defparameter *bla*
- (get-most-recent-image))
 
 #+nil
-(abort-acquisition*)
+(get-status)
+
+#+nil
+(loop for i below 10 do
+ (progn
+   (start-acquisition)
+  ; (sleep .0001)
+   (check
+       (wait-for-acquisition*))
+   (defparameter *bla*
+     (get-most-recent-image))
+   (format t "~a~%" (list (get-internal-real-time) (aref *bla* 0 0)))))
+
+(defun abort-acquisition ()
+  (when (eq 'drv_acquiring (get-status))
+    (check (abort-acquisition*))))
+
+#+nil
+(abort-acquisition)
 #+nil
 (time
  (progn
