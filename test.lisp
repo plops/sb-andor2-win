@@ -116,7 +116,9 @@
 	     (w h)
 	     (ww 32)
 	     (hh 32)
-	     (img (progn #+nil (forthdd::forthdd-talk 
+	     (img 
+	      and::*bla*
+	      #+nil(progn #+nil (forthdd::forthdd-talk 
 				#x23 
 				(list forthdd-number))
 			 (and::start-acquisition)
@@ -126,7 +128,7 @@
 	       #+nil
 		  (make-array (list hh ww) :element-type '(unsigned-byte 16)))
 	     (objs (make-array 1 :element-type '(unsigned-byte 32))))
-	
+	(sleep .1)
 	(gl:gen-textures (length objs) objs)
 	(gl:bind-texture gl:+texture-2d+ (aref objs 0))
 	;;(gl:pixel-store-i gl:+unpack-alignment+ 1)
@@ -145,8 +147,8 @@
 	
 	(gl:matrix-mode gl:+color+)
 	(gl:load-identity)
-	(gl:scale-f 200 1 1)
-	(gl:translate-f (- (/ 534s0 (expt 2 16))) 0 0)
+	(gl:scale-f 40 1 1)
+	(gl:translate-f (- (/ 2353.4s0 (expt 2 16))) 0 0)
 	
 	(gl:matrix-mode gl:+modelview+)
 
