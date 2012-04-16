@@ -12,7 +12,58 @@
   (initialize* (sb-sys:int-sap 0))))
 
 #+nil
-(initialize)
+(time
+ (initialize))
+
+#+nil
+(time 
+ (progn
+   (initialize)
+   (set-acquisition-mode)
+   (set-read-mode)
+   (set-vs-speed)
+   (set-fastest-hs-speed)
+   (set-trigger-mode)
+   (set-exposure-time .02)
+   (set-image :xstart 1 :ystart 1 :xend 512 :yend 512)))
+
+#+nil
+(set-trigger-mode 'internal)
+
+#+nil
+(set-acquisition-mode 'kinetics)
+
+#+nil
+(start-acquisition)
+
+#+nil
+(get-temperature-f*)
+
+(defun get-status ()
+  (multiple-value-bind (err stat) (get-status*)
+    (unless (= err DRV_SUCCESS)
+      (break "error: ~d ~a" err (lookup-error err)))
+    (lookup-error stat)))
+#+nil
+(get-status)
+#+nil
+(defparameter *bla*
+ (get-most-recent-image))
+
+#+nil
+(abort-acquisition*)
+#+nil
+(time
+ (progn
+  (start-acquisition)
+  (check
+   (wait-for-acquisition*))
+  (check
+   (abort-acquisition*))))
+
+#+nil
+(check
+ (abort-acquisition*))
 
 (defun get-capabilities ()
  (with-alien ((c (struct andorcaps)))
@@ -65,7 +116,7 @@
 	    (fast-kinetics 4)
 	    (run-till-abort 5)))))
 
-#+nil
+#+nil 
 (set-acquisition-mode)
 
 (defun set-read-mode (&optional (mode 'image))
@@ -158,6 +209,7 @@
 #+nil
 (set-trigger-mode)
 
+
 (defun get-maximum-binning (&optional (mode 'image))
   (let ((m (ecase mode
 	     ('full-vertical-binning 0)
@@ -231,11 +283,15 @@
 (progn
   (time
    (prepare-acquisition*))
- (time
-  (progn
-    (start-acquisition)
-    (wait-for-acquisition*))))
-
+  (time
+   (progn
+     (start-acquisition)
+     (wait-for-acquisition*))))
+#+nil
+(time
+ (progn
+   (start-acquisition)
+   (wait-for-acquisition*)))
 #+nil
 (check (abort-acquisition*))
 
@@ -260,6 +316,7 @@
   (sleep .2)
   (defparameter *bla*
     (get-most-recent-image)))
+
 
 #+nil
 (shutdown)

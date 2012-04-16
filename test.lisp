@@ -70,6 +70,7 @@
 (let ((rot 0)
       (forthdd-number 0))
   (defun draw ()
+    
     (destructuring-bind (w h) (glfw:get-window-size)
       (setf h (max h 1))
       (gl:viewport 0 0 w h)
@@ -115,14 +116,17 @@
 	     (w h)
 	     (ww 32)
 	     (hh 32)
-	     (img #+nil (progn (forthdd::forthdd-talk 
-			  #x23 
-			  (list forthdd-number))
+	     (img (progn #+nil (forthdd::forthdd-talk 
+				#x23 
+				(list forthdd-number))
 			 (and::start-acquisition)
 			 (and::wait-for-acquisition*)
+			 (sleep .1)
 			 (and::get-most-recent-image))
-	       #+nil (make-array (list hh ww) :element-type '(unsigned-byte 16)))
+	       #+nil
+		  (make-array (list hh ww) :element-type '(unsigned-byte 16)))
 	     (objs (make-array 1 :element-type '(unsigned-byte 32))))
+	
 	(gl:gen-textures (length objs) objs)
 	(gl:bind-texture gl:+texture-2d+ (aref objs 0))
 	;;(gl:pixel-store-i gl:+unpack-alignment+ 1)
@@ -132,14 +136,16 @@
 			    gl:+texture-mag-filter+ gl:+nearest+)
 	(gl:enable gl:+texture-2d+)
 	
-#+nil
+	#+nil
 	(dotimes (i ww)
 	  (dotimes (j hh)
 	    (setf (aref img j i) (* (/ (expt 2 8) 32) j (mod (* i j) 2)))))
 
+	(format t "~a~%" (aref img 0 0))
+	
 	(gl:matrix-mode gl:+color+)
 	(gl:load-identity)
-	(gl:scale-f 100 1 1)
+	(gl:scale-f 200 1 1)
 	(gl:translate-f (- (/ 534s0 (expt 2 16))) 0 0)
 	
 	(gl:matrix-mode gl:+modelview+)
