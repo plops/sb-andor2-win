@@ -33,7 +33,10 @@
 		       :element-type '(unsigned-byte 16))))
   (defun acquire-512 ()
    (start-acquisition)
-   (sleep .2)
+   (loop while (eq 'DRV_ACQUIRING (get-status))
+      do
+	(sleep .01)
+	(format t "."))
 #+nil   (check
     (wait-for-acquisition*)) ;; try wait-for-acquisition-time-out
    (format t "~a~%" (list (get-internal-real-time) 
