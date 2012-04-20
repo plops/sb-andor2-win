@@ -24,20 +24,26 @@
   (set-vs-speed)
   (set-fastest-hs-speed)
   (set-trigger-mode)
-  (set-exposure-time .001)
+  (set-exposure-time .01)
   (check (set-temperature* -5))
   (check (cooler-on*))
   (set-image :xstart 1 :ystart 1 :xend 512 :yend 512))
 
-(defun acquire-512 ()
-  (start-acquisition)
-  (check
-   (wait-for-acquisition*)) ;; try wait-for-acquisition-time-out
-  (setf *bla* (get-most-recent-image))
-  (format t "~a~%" (list (get-internal-real-time) (aref *bla* 0 0))))
+(let ((buf (make-array (list 42 512 512)
+		       :element-type '(unsigned-byte 16))))
+  (defun acquire-512 ()
+   (start-acquisition)
+   (check
+    (wait-for-acquisition*)) ;; try wait-for-acquisition-time-out
+   (format t "~a~%" (list (get-internal-real-time) 
+			  (get-all-images16 :arr buf)))
+   (setf *bla* buf)))
 
 (defun do-something-while-idle ()
-  (format t "~a~%"  (get-status)))
+  (format t "~a "  (list (get-status) 
+			 (multiple-value-bind (a b)
+			     (get-temperature-f*) 
+			   b))))
 
 (let ((run-camera-p t))
   (defun stop-camera ()
@@ -48,6 +54,7 @@
 	 (do-something-while-idle)
 	 (acquire-512))))
 
+;(- 1931 647) ;; = 1284
 ;; 1125/camgui.py
 (defun get-all-images16 (&key arr)
   "store all images from the circular buffer into ARR (an array which
@@ -57,22 +64,30 @@ is already allocated and can contain more data than needed)."
       (break "error: get-number-available-images ~d ~a" num (lookup-error num)))
     (destructuring-bind (z y x) (array-dimensions arr)
       (let ((n (1+ (- last first))))
-	(unless (< z n)
+	(unless (< n z)
 	  (break "warning: get-all-images16 needs storage for more images than supplied: ~a~%"
 		 (list n z)))
-	(multiple-value-bind (num valid-first valid-last) 
-	    (get-images16* first last arr (* n y x))
-	  (unless (= num DRV_SUCCESS)
-	    (break "error: get-images16 ~d ~a" num (lookup-error num)))
-	 (unless (and (= first valid-first)
-		      (= last valid-last))
-	   (break "warning: get-images16 didn't return expected number of images ~a~%" 
-		  (list first last valid-first valid-last)))
-	 (values n arr))))))
+	(let* ((arr1 (sb-ext:array-storage-vector arr))
+	       (arr1-sap (sb-sys:vector-sap arr1)))
+	 (multiple-value-bind (num valid-first valid-last) 
+	     (get-images16* first last arr1-sap (* n y x))
+	   (unless (= num DRV_SUCCESS)
+	     (break "error: get-images16 ~d ~a" num (lookup-error num)))
+	   (unless (and (= first valid-first)
+			(= last valid-last))
+	     (break "warning: get-images16 didn't return expected number of images ~a~%" 
+		    (list first last valid-first valid-last)))
+	   (check (free-internal-memory*))
+	   (values n arr)))))))
 
+;; 560
 #+nil
 (sb-thread:make-thread #'camera-function :name "camera-thread")
-
+#+nil
+(push #'(lambda () (format t "gc ~a~%" (list (get-internal-real-time))))
+      sb-ext:*after-gc-hooks*) 
+#+nil
+(sb-ext:gc :full t)
 #+nil
 (set-trigger-mode 'internal)
 
@@ -84,7 +99,6 @@ is already allocated and can contain more data than needed)."
 
 #+nil
 (get-temperature-f*)
-
 #+nil
 (check (set-temperature* -5))
 #+nil

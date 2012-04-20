@@ -149,12 +149,12 @@
 	
 	(gl:matrix-mode gl:+color+)
 	(gl:load-identity)
-	(gl:scale-f 100 1 1)
+	(gl:scale-f 10 1 1)
 	(gl:translate-f (- (/ 534s0 (expt 2 16))) 0 0)
 	
 	(gl:matrix-mode gl:+modelview+)
 	(when img
-	 (destructuring-bind (h w) (array-dimensions img)
+	 (destructuring-bind (z h w) (array-dimensions img)
 	   (sb-sys:with-pinned-objects (img)
 	     (gl:tex-image-2d gl:+texture-2d+ 0 gl:+luminance+ w h 0
 			      gl:+luminance+ gl:+unsigned-short+
