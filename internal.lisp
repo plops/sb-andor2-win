@@ -20,10 +20,10 @@
 (defun initialize-512 ()
   (initialize)
   (set-acquisition-mode)
-  (set-read-mode)
+  (set-read-mode 'image)
   (set-vs-speed)
   (set-fastest-hs-speed)
-  (set-trigger-mode)
+  (set-trigger-mode 'internal)
   (set-exposure-time .01)
   (check (set-temperature* -5))
   (check (cooler-on*))
@@ -89,8 +89,8 @@ is already allocated and can contain more data than needed)."
 #+nil
 (sb-thread:make-thread #'camera-function :name "camera-thread")
 #+nil
-(push #'(lambda () (format t "gc ~a~%" (list (get-internal-real-time))))
-      sb-ext:*after-gc-hooks*) 
+(setf sb-ext:*after-gc-hooks* 
+      (list #'(lambda () (format t "gc ~a~%" (list (get-internal-real-time)))))) 
 #+nil
 (sb-ext:gc :full t)
 #+nil
@@ -101,11 +101,29 @@ is already allocated and can contain more data than needed)."
 
 #+nil
 (start-acquisition)
+#+nil
+(initialize-512)
+#+nil
+(progn ;; kinetics series 
+  (set-acquisition-mode 'kinetics)
+  (set-exposure-time .01)
+  (check (set-number-accumulations* 1))
+  ;; (check (set-accumulation-cycle-time* .2))
+  (check (set-kinetic-cycle-time* .2))
+  (check (set-number-kinetics* 3)))
 
+#+nil
+(get-status)
+#+nil
+(get-number-available-images*)
+#+nil
+(abort-acquisition)
+#+nil
+(shutdown)
 #+nil
 (get-temperature-f*)
 #+nil
-(check (set-temperature* -5))
+(check (set-temperature* -15))
 #+nil
 (check
  (cooler-on*))
