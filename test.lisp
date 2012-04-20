@@ -1,6 +1,8 @@
+#+nil
 (setf asdf:*central-registry* 
       #+win64 '("C:/Users/martin/Desktop/tmp/sb-andor2-win/")
       #+linux '("/home/martin/stage/sb-andor2-win/"))
+#+nil
 (require :sb-andor2-win)
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
@@ -142,22 +144,22 @@
 	(dotimes (i ww)
 	  (dotimes (j hh)
 	    (setf (aref img j i) (* (/ (expt 2 8) 32) j (mod (* i j) 2)))))
-
+	#+nil
 	(format t "~a~%" (aref img 0 0))
 	
 	(gl:matrix-mode gl:+color+)
 	(gl:load-identity)
-	(gl:scale-f 40 1 1)
-	(gl:translate-f (- (/ 2353.4s0 (expt 2 16))) 0 0)
+	(gl:scale-f 100 1 1)
+	(gl:translate-f (- (/ 534s0 (expt 2 16))) 0 0)
 	
 	(gl:matrix-mode gl:+modelview+)
-
-	(destructuring-bind (h w) (array-dimensions img)
-	 (sb-sys:with-pinned-objects (img)
-	   (gl:tex-image-2d gl:+texture-2d+ 0 gl:+luminance+ w h 0
-			    gl:+luminance+ gl:+unsigned-short+
-			    (sb-sys:vector-sap 
-			     (sb-ext:array-storage-vector img)))))
+	(when img
+	 (destructuring-bind (h w) (array-dimensions img)
+	   (sb-sys:with-pinned-objects (img)
+	     (gl:tex-image-2d gl:+texture-2d+ 0 gl:+luminance+ w h 0
+			      gl:+luminance+ gl:+unsigned-short+
+			      (sb-sys:vector-sap 
+			       (sb-ext:array-storage-vector img))))))
 	
 	(let ((a (gl:get-error)))
 	  (unless (= a 0)
@@ -185,7 +187,7 @@
 	(gl:disable gl:+texture-2d+)
 	(gl:delete-textures 1 objs)))))
 
-
+#+nil
 (glfw:do-window (:title "bla" :width 512 :height 512)
     ()
   (when (eql (glfw:get-key glfw:+key-esc+) glfw:+press+)

@@ -15,17 +15,40 @@
 (time
  (initialize))
 
+(defparameter *bla* nil)
+
+(defun initialize-512 ()
+  (initialize)
+  (set-acquisition-mode)
+  (set-read-mode)
+  (set-vs-speed)
+  (set-fastest-hs-speed)
+  (set-trigger-mode)
+  (set-exposure-time .001)
+  (check (set-temperature* -5))
+  (check (cooler-on*))
+  (set-image :xstart 1 :ystart 1 :xend 512 :yend 512))
+
+(defun acquire-512 ()
+  (start-acquisition)
+  (check
+   (wait-for-acquisition*))
+  (setf *bla* (get-most-recent-image))
+  (format t "~a~%" (list (get-internal-real-time) (aref *bla* 0 0))))
+
+(defun do-something-while-idle ()
+  (format t "~a~%"  (get-status)))
+
+(let ((run-camera-p t))
+  (defun stop-camera ()
+      (setf run-camera-p nil))
+  (defun camera-function ()
+    (initialize-512)
+    (loop while run-camera-p do
+	 (do-something-while-idle)
+	 (acquire-512))))
 #+nil
-(time 
- (progn
-   (initialize)
-   (set-acquisition-mode)
-   (set-read-mode)
-   (set-vs-speed)
-   (set-fastest-hs-speed)
-   (set-trigger-mode)
-   (set-exposure-time .02)
-   (set-image :xstart 1 :ystart 1 :xend 512 :yend 512)))
+(sb-thread:make-thread #'camera-function :name "camera-thread")
 
 #+nil
 (set-trigger-mode 'internal)
@@ -56,16 +79,7 @@
 #+nil
 (get-status)
 
-#+nil
-(loop for i below 10 do
- (progn
-   (start-acquisition)
-  ; (sleep .0001)
-   (check
-       (wait-for-acquisition*))
-   (defparameter *bla*
-     (get-most-recent-image))
-   (format t "~a~%" (list (get-internal-real-time) (aref *bla* 0 0)))))
+
 
 (defun abort-acquisition ()
   (when (eq 'drv_acquiring (get-status))
