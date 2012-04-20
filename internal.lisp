@@ -244,7 +244,8 @@ is already allocated and can contain more data than needed)."
 (set-baseline-clamp)
 
 (defun shutdown () ;; for classic and iccd systems the temperature
-		   ;; should be above -20 degree before shutting down
+  ;; should be above -20 degree before shutting down but I don't have
+  ;; those
   (let* ((caps (get-capabilities))
 	 (temp-p (/= 0 (logand (getf caps 'set) 
 			       AC_SETFUNCTION_TEMPERATURE))))
