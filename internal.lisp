@@ -33,7 +33,8 @@
 		       :element-type '(unsigned-byte 16))))
   (defun acquire-512 ()
    (start-acquisition)
-   (check
+   (sleep .2)
+#+nil   (check
     (wait-for-acquisition*)) ;; try wait-for-acquisition-time-out
    (format t "~a~%" (list (get-internal-real-time) 
 			  (get-all-images16 :arr buf)))
@@ -81,6 +82,7 @@ is already allocated and can contain more data than needed)."
 	   (values n arr)))))))
 
 ;; 560
+;; 1363-41
 #+nil
 (sb-thread:make-thread #'camera-function :name "camera-thread")
 #+nil
