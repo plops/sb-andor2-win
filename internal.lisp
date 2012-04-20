@@ -32,7 +32,7 @@
 (defun acquire-512 ()
   (start-acquisition)
   (check
-   (wait-for-acquisition*))
+   (wait-for-acquisition*)) ;; try wait-for-acquisition-time-out
   (setf *bla* (get-most-recent-image))
   (format t "~a~%" (list (get-internal-real-time) (aref *bla* 0 0))))
 
@@ -47,6 +47,29 @@
     (loop while run-camera-p do
 	 (do-something-while-idle)
 	 (acquire-512))))
+
+;; 1125/camgui.py
+(defun get-all-images16 (&key arr)
+  "store all images from the circular buffer into ARR (an array which
+is already allocated and can contain more data than needed)."
+  (multiple-value-bind (num first last) (get-number-available-images*)
+    (unless (= num DRV_SUCCESS)
+      (break "error: get-number-available-images ~d ~a" num (lookup-error num)))
+    (destructuring-bind (z y x) (array-dimensions arr)
+      (let ((n (1+ (- last first))))
+	(unless (< z n)
+	  (break "warning: get-all-images16 needs storage for more images than supplied: ~a~%"
+		 (list n z)))
+	(multiple-value-bind (num valid-first valid-last) 
+	    (get-images16* first last arr (* n y x))
+	  (unless (= num DRV_SUCCESS)
+	    (break "error: get-images16 ~d ~a" num (lookup-error num)))
+	 (unless (and (= first valid-first)
+		      (= last valid-last))
+	   (break "warning: get-images16 didn't return expected number of images ~a~%" 
+		  (list first last valid-first valid-last)))
+	 (values n arr))))))
+
 #+nil
 (sb-thread:make-thread #'camera-function :name "camera-thread")
 
@@ -220,7 +243,8 @@
 #+nil
 (set-baseline-clamp)
 
-(defun shutdown ()
+(defun shutdown () ;; for classic and iccd systems the temperature
+		   ;; should be above -20 degree before shutting down
   (let* ((caps (get-capabilities))
 	 (temp-p (/= 0 (logand (getf caps 'set) 
 			       AC_SETFUNCTION_TEMPERATURE))))
