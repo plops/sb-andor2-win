@@ -17,6 +17,9 @@
 
 (defparameter *bla* nil)
 
+(defparameter *w* 512)
+(defparameter *h* 512)
+
 (defun initialize-512 ()
   (initialize)
   (set-acquisition-mode)
@@ -24,18 +27,18 @@
   (set-vs-speed)
   (set-fastest-hs-speed)
   (set-trigger-mode 'internal)
-  (set-exposure-time .01)
+  (set-exposure-time .00001)
   (check (set-temperature* -5))
   (check (cooler-on*))
-  (set-image :xstart 1 :ystart 1 :xend 512 :yend 512))
+  (set-image :xstart 1 :ystart 1 :xend *w* :yend *h*))
 
-(let ((buf (make-array (list 42 512 512)
+(let ((buf (make-array (list 42 *w* *h*)
 		       :element-type '(unsigned-byte 16))))
   (defun acquire-512 ()
    (start-acquisition)
    (loop while (eq 'DRV_ACQUIRING (get-status))
       do
-	(sleep .01)
+	(sleep .001)
 	(format t "."))
 #+nil   (check
     (wait-for-acquisition*)) ;; try wait-for-acquisition-time-out
@@ -104,13 +107,26 @@ is already allocated and can contain more data than needed)."
 #+nil
 (initialize-512)
 #+nil
+
 (progn ;; kinetics series 
   (set-acquisition-mode 'kinetics)
-  (set-exposure-time .01)
+  (set-exposure-time .000001)
   (check (set-number-accumulations* 1))
   ;; (check (set-accumulation-cycle-time* .2))
-  (check (set-kinetic-cycle-time* .2))
-  (check (set-number-kinetics* 3)))
+  (check (set-kinetic-cycle-time* 0f0))
+  (check (set-number-kinetics* 14000))
+  (set-read-mode 'image)
+  (set-vs-speed)
+  (check (set-shutter* 1 0 10 10))
+  (check (set-frame-transfer-mode* 0))
+  (set-fastest-hs-speed)
+  (set-trigger-mode 'internal)
+  (check (set-temperature* -5))
+  (check (cooler-on*))
+  (setf *w* 16
+	*h* 16)
+  (set-image :xstart 1 :ystart 1 :xend *w* :yend *h*)
+  (get-acquisition-timings))
 
 #+nil
 (get-status)
@@ -393,7 +409,7 @@ is already allocated and can contain more data than needed)."
 (check (abort-acquisition*))
 
 (defun get-most-recent-image ()
- (destructuring-bind (h w) (list 512 512)
+ (destructuring-bind (h w) (list *w* *h*)
    (let ((a (make-array (list h w)
 			:element-type '(unsigned-byte 16))))
      (sb-sys:with-pinned-objects (a)
