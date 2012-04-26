@@ -576,9 +576,10 @@
 (DEFINE-ALIEN-ROUTINE ("IdAndorDll" ID-ANDOR-DLL*) UNSIGNED-INT)
 (DEFINE-ALIEN-ROUTINE ("InAuxPort" IN-AUX-PORT*) UNSIGNED-INT (PORT INT)
                       (STATE (* INT)))
-(DEFINE-ALIEN-ROUTINE ("Initialize" INITIALIZE*) UNSIGNED-INT (DIR (* CHAR)))
+(DEFINE-ALIEN-ROUTINE ("Initialize" INITIALIZE*) UNSIGNED-INT 
+  (DIR sb-alien:c-string))
 (DEFINE-ALIEN-ROUTINE ("InitializeDevice" INITIALIZE-DEVICE*) UNSIGNED-INT
-                      (DIR (* CHAR)))
+                      (DIR sb-alien:c-string))
 (DEFINE-ALIEN-ROUTINE ("IsAmplifierAvailable" IS-AMPLIFIER-AVAILABLE*)
                       UNSIGNED-INT (IAMP INT))
 (DEFINE-ALIEN-ROUTINE ("IsCoolerOn" IS-COOLER-ON*) UNSIGNED-INT

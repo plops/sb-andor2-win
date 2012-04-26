@@ -9,7 +9,7 @@
 
 (defun initialize ()
  (check
-  (initialize* (sb-sys:int-sap 0))))
+  (initialize* "/usr/local/etc/andor")))
 
 #+nil
 (is-cooler-on*)
@@ -25,48 +25,34 @@
 (defparameter *h* 512)
 
 #+nil
-(initialize-512)
+(progn ;; kinetics series 
+  (set-acquisition-mode 'kinetics)
+  (set-exposure-time .000001)
+  (check (set-number-accumulations* 1))
+  ;; (check (set-accumulation-cycle-time* .2))
+  (check (set-kinetic-cycle-time* 0f0))
+  (check (set-number-kinetics* 10))
+  (set-read-mode 'image)
+  (set-vs-speed)
+  (check (set-shutter* 1 0 10 10))
+  (check (set-frame-transfer-mode* 0))
+  (set-fastest-hs-speed)
+  (set-trigger-mode 'internal)
+  (check (set-temperature* -40))
+  (check (cooler-on*))
+  (set-isolated-crop-mode* 0 *h* *w* 1 1)
+  (set-image :xstart 1 :ystart 1 :xend *w* :yend *h*)
+  (get-acquisition-timings))
 
 #+nil
 (get-temperature-f*)
 
-(defun initialize-512 ()
-  (initialize)
-  (set-acquisition-mode)
-  (set-read-mode 'image)
-  (set-vs-speed)
-  (set-fastest-hs-speed)
-  (set-trigger-mode 'internal)
-  (set-exposure-time .00001)
-  (check (set-temperature* -40))
-  (check (cooler-on*))
-  (set-image :xstart 1 :ystart 1 :xend *w* :yend *h*))
-
-(let ((buf (make-array (list 42 *w* *h*)
-		       :element-type '(unsigned-byte 16))))
-  (defun acquire-512 ()
-   (start-acquisition)
-   (sleep (/ 1 15.08))
-   (loop while (eq 'DRV_ACQUIRING (get-status))
-      do
-	(sleep .001)
-	(format t "."))
-#+nil   (check
-    (wait-for-acquisition*)) ;; try wait-for-acquisition-time-out
-   (format t "~a~%" (list (get-internal-real-time) 
-			  (get-all-images16 :arr buf)))
-   (setf *bla* buf)))
-
-(defun do-something-while-idle ()
-  (format t "~a "  (list (get-status) 
-			 (multiple-value-bind (a b)
-			     (get-temperature-f*) 
-			   b))))
-
-(setf *w* 512
-      *h* 512)
 #+nil
-(let ((buf (make-array (list 10000 *w* *h*)
+(get-size-of-circular-buffer*)
+
+
+#+nil
+(let ((buf (make-array (list 10 *w* *h*)
 		       :element-type '(unsigned-byte 16))))
   #+nil(start-acquisition)
   #+nil(check
@@ -76,8 +62,6 @@
   (setf *bla* buf)
   nil)
 
-#+nil
-(get-size-of-circular-buffer*)
 #+nil
 (start-acquisition)
 #+nil
@@ -89,16 +73,7 @@
 #+nil
 (check
  (free-internal-memory*))
-(let ((run-camera-p t))
-  (defun stop-camera ()
-      (setf run-camera-p nil))
-  (defun camera-function ()
-    (initialize-512)
-    (loop while run-camera-p do
-	 (do-something-while-idle)
-	 (acquire-512))))
 
-;(- 1931 647) ;; = 1284
 ;; 1125/camgui.py
 (defun get-all-images16 (&key arr)
   "store all images from the circular buffer into ARR (an array which
@@ -123,65 +98,11 @@ is already allocated and can contain more data than needed)."
 		    (list first last valid-first valid-last)))
 #+nil	   (check (free-internal-memory*))
 	   (values n arr)))))))
-
-;; 560
-;; 1363-41
-#+nil
-(sb-thread:make-thread #'camera-function :name "camera-thread")
 #+nil
 (setf sb-ext:*after-gc-hooks* 
       (list #'(lambda () (format t "gc ~a~%" (list (get-internal-real-time)))))) 
 #+nil
 (sb-ext:gc :full t)
-#+nil
-(set-trigger-mode 'internal)
-
-#+nil
-(set-acquisition-mode 'single-scan)
-
-#+nil
-(start-acquisition)
-#+nil
-(initialize-512)
-#+nil
-(progn ;; kinetics series 
-  (set-acquisition-mode 'kinetics)
-  (set-exposure-time .000001)
-  (check (set-number-accumulations* 1))
-  ;; (check (set-accumulation-cycle-time* .2))
-  (check (set-kinetic-cycle-time* 0f0))
-  (check (set-number-kinetics* 14000))
-  (set-read-mode 'image)
-  (set-vs-speed)
-  (check (set-shutter* 1 0 10 10))
-  (check (set-frame-transfer-mode* 0))
-  (set-fastest-hs-speed)
-  (set-trigger-mode 'internal)
-  (check (set-temperature* -40))
-  (check (cooler-on*))
-  (setf *w* 11
-	*h* 1)
-  (set-isolated-crop-mode* 1 *h* *w* 1 1)
-  (set-image :xstart 1 :ystart 1 :xend *w* :yend *h*)
-  (get-acquisition-timings))
-
-#+nil
-(get-status)
-#+nil
-(get-number-available-images*)
-#+nil
-(abort-acquisition)
-#+nil
-(shutdown)
-#+nil
-(get-temperature-f*)
-#+nil
-(check (set-temperature* -40))
-#+nil
-(check
- (cooler-on*))
-
-
 
 (defun get-status ()
   (multiple-value-bind (err stat) (get-status*)
@@ -192,26 +113,9 @@ is already allocated and can contain more data than needed)."
 #+nil
 (get-status)
 
-
-
 (defun abort-acquisition ()
   (when (eq 'drv_acquiring (get-status))
     (check (abort-acquisition*))))
-
-#+nil
-(abort-acquisition)
-#+nil
-(time
- (progn
-  (start-acquisition)
-  (check
-   (wait-for-acquisition*))
-  (check
-   (abort-acquisition*))))
-
-#+nil
-(check
- (abort-acquisition*))
 
 (defun get-capabilities ()
  (with-alien ((c (struct andorcaps)))
@@ -230,10 +134,6 @@ is already allocated and can contain more data than needed)."
 	   'set (andorcaps-set-functions p)
 	   'pixel-mode (andorcaps-pixel-mode p)
 	   'trigger (andorcaps-trigger-modes p)))))
-
-#+nil
-(get-capabilities)
-
 
 (defun get-head-model ()
  (let* ((s (make-array 32 :element-type '(unsigned-byte 8))))
@@ -437,13 +337,6 @@ is already allocated and can contain more data than needed)."
    (progn
      (start-acquisition)
      (wait-for-acquisition*))))
-#+nil
-(time
- (progn
-   (start-acquisition)
-   (wait-for-acquisition*)))
-#+nil
-(check (abort-acquisition*))
 
 (defun get-most-recent-image ()
  (destructuring-bind (h w) (list *w* *h*)
@@ -455,18 +348,3 @@ is already allocated and can contain more data than needed)."
 		(sb-ext:array-storage-vector a))
 	       (* h w))))
      a)))
-
-#+nil
-(defparameter *bla*
- (get-most-recent-image))
-
-#+nil
-(dotimes (i 100)
-  (start-acquisition)
-  (sleep .2)
-  (defparameter *bla*
-    (get-most-recent-image)))
-
-
-#+nil
-(shutdown)
