@@ -605,7 +605,7 @@
 (DEFINE-ALIEN-ROUTINE ("SaveAsEDF" SAVE-AS-EDF*) UNSIGNED-INT
                       (SZ-PATH (* CHAR)) (I-MODE INT))
 (DEFINE-ALIEN-ROUTINE ("SaveAsFITS" SAVE-AS-FITS*) UNSIGNED-INT
-                      (SZ-FILE-TITLE (* CHAR)) (TYP INT))
+                      (SZ-FILE-TITLE sb-alien:c-string) (TYP INT))
 (DEFINE-ALIEN-ROUTINE ("SaveAsRaw" SAVE-AS-RAW*) UNSIGNED-INT
                       (SZ-FILE-TITLE (* CHAR)) (TYP INT))
 (DEFINE-ALIEN-ROUTINE ("SaveAsSif" SAVE-AS-SIF*) UNSIGNED-INT (PATH (* CHAR)))

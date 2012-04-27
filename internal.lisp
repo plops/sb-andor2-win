@@ -65,6 +65,8 @@
 #+nil
 (start-acquisition)
 #+nil
+(save-as-fits* "/dev/shm/o.fits" 0)
+#+nil
 (abort-acquisition)
 #+nil
 (get-number-available-images*)
