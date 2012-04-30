@@ -21,20 +21,23 @@
 
 (defparameter *bla* nil)
 
-(defparameter *w* 512)
-(defparameter *h* 512)
+(defparameter *w* 13 #+nil 92)
+(defparameter *h* 10 #+nil 40)
+
+#+nil
+(get-detector)
 
 #+nil
 (progn ;; kinetics series 
   (set-acquisition-mode 'kinetics)
-  (set-exposure-time .000001)
+  (set-exposure-time .01)
   (check (set-number-accumulations* 1))
   ;; (check (set-accumulation-cycle-time* .2))
-  (check (set-kinetic-cycle-time* 0f0))
-  (check (set-number-kinetics* 10))
+  (check (set-kinetic-cycle-time* .03f0))
+  (check (set-number-kinetics* 2300))
   (set-read-mode 'image)
   (set-vs-speed)
-  (check (set-shutter* 1 0 10 10))
+  (check (set-shutter* 1 0 0 1))
   (check (set-frame-transfer-mode* 0))
   (set-fastest-hs-speed)
   (set-trigger-mode 'internal)
@@ -43,6 +46,9 @@
   (set-isolated-crop-mode* 0 *h* *w* 1 1)
   (set-image :xstart 1 :ystart 1 :xend *w* :yend *h*)
   (get-acquisition-timings))
+
+#+nil
+(check (set-shutter* 1 1 0 1))
 
 #+nil
 (get-temperature-f*)
@@ -244,6 +250,9 @@ is already allocated and can contain more data than needed)."
     (when temp-p
       (check (cooler-off*)))
     (check (shut-down*))))
+
+#+nil
+(shut-down*)
 
 (defun set-trigger-mode (&optional (mode 'internal))
   (let* ((m (ecase mode
