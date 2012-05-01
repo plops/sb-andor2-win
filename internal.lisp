@@ -38,7 +38,7 @@
   (check (set-number-accumulations* 1))
   ;; (check (set-accumulation-cycle-time* .2))
   (check (set-kinetic-cycle-time* .036f0))
-  (check (set-number-kinetics* 3))
+  (check (set-number-kinetics* 1))
   (set-read-mode 'image)
   (set-vs-speed)
   ;; Note: there is a 10us gap in SHUTTER before FIRE starts
@@ -73,11 +73,43 @@
 			 (get-all-images16 :arr buf)))
   (setf *bla* buf)
   nil)
-
+(defun write-mma-disk (&key (cx 0) (cy 0) (r 1s0))
+  ;; write a picture on mma
+ (let* ((n 256)
+	(nh (floor n 2))
+	(buf (make-array (list n n) :element-type '(unsigned-byte 16)
+			 :initial-element 0))
+	(buf1 (sb-ext:array-storage-vector buf)))
+   (dotimes (i n)
+     (dotimes (j n)
+       (let* ((x (* (+ i (- nh) cx) (/ 2s0 n)))
+	      (y (* (+ j (- nh) cy) (/ 2s0 n)))
+	      (rad (sqrt (+ (* x x) (* y y)))))
+	 (setf (aref buf j i)
+	       (if (<= rad r)
+		  4095
+		  0)))))
+   (sb-sys:with-pinned-objects (buf)
+     (mma::check
+       (mma::write-matrix-data 1 3 (sb-sys:vector-sap buf1) 
+			       (* n n))))))
+#+nil
+(write-mma-disk :cx 12 :cy 0 :r .2)
+#+nil
+(forthdd::forthdd-talk #x23 (list 34))
 #+nil
 (start-acquisition)
 #+nil
 (save-as-fits* "/dev/shm/o.fits" 0)
+
+#+nil
+(loop for i from 0 below 10 do
+     (write-mma-disk :cx (- (* 25 i) 128) :cy 0 :r .2)
+     (forthdd::forthdd-talk #x23 (list i))
+     (start-acquisition)
+     (sleep .2)
+     (save-as-fits* (format nil "/dev/shm/o~3,'0d.fits" i) 0))
+
 #+nil
 (abort-acquisition)
 #+nil
