@@ -38,10 +38,11 @@
   (check (set-number-accumulations* 1))
   ;; (check (set-accumulation-cycle-time* .2))
   (check (set-kinetic-cycle-time* .036f0))
-  (check (set-number-kinetics* 30000))
+  (check (set-number-kinetics* 3))
   (set-read-mode 'image)
   (set-vs-speed)
-  (check (set-shutter* 1 0 0 1))
+  ;; Note: there is a 10us gap in SHUTTER before FIRE starts
+  (check (set-shutter* 1 0 0 1)) 
   (check (set-frame-transfer-mode* 0))
   (set-fastest-hs-speed)
   (set-trigger-mode 'internal)
