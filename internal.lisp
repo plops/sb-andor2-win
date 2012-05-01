@@ -21,8 +21,12 @@
 
 (defparameter *bla* nil)
 
-(defparameter *w* 13 #+nil 92)
-(defparameter *h* 10 #+nil 40)
+#+nil
+(progn ;; small
+ (defparameter *w* 13 #+nil 92)
+ (defparameter *h* 10 #+nil 40))
+(defparameter *w* 1392)
+(defparameter *h* 1040)
 
 #+nil
 (get-detector)
@@ -33,8 +37,8 @@
   (set-exposure-time .01)
   (check (set-number-accumulations* 1))
   ;; (check (set-accumulation-cycle-time* .2))
-  (check (set-kinetic-cycle-time* .03f0))
-  (check (set-number-kinetics* 2300))
+  (check (set-kinetic-cycle-time* .036f0))
+  (check (set-number-kinetics* 30000))
   (set-read-mode 'image)
   (set-vs-speed)
   (check (set-shutter* 1 0 0 1))
@@ -47,8 +51,9 @@
   (set-image :xstart 1 :ystart 1 :xend *w* :yend *h*)
   (get-acquisition-timings))
 
-#+nil
-(check (set-shutter* 1 1 0 1))
+#+nil 
+(check ;; turn laser on constantly
+ (set-shutter* 1 1 0 1))
 
 #+nil
 (get-temperature-f*)
