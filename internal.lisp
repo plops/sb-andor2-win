@@ -33,16 +33,22 @@
 
 #+nil
 (progn ;; kinetics series 
-  (set-acquisition-mode 'kinetics)
-  (set-exposure-time .01)
+  (set-acquisition-mode
+    'run-till-abort
+   #+nil 'single-scan 
+   #+nil 'kinetics)
+  (set-exposure-time .02)
   (check (set-number-accumulations* 1))
   ;; (check (set-accumulation-cycle-time* .2))
-  (check (set-kinetic-cycle-time* .036f0))
-  (check (set-number-kinetics* 1))
+  (check (set-kinetic-cycle-time* .06f0))
+  ;(check (set-number-kinetics* 19))
   (set-read-mode 'image)
   (set-vs-speed)
   ;; Note: there is a 10us gap in SHUTTER before FIRE starts
-  (check (set-shutter* 1 0 0 1)) 
+  (check (set-shutter* 1
+		       0 ;; auto
+		       0 1
+		       )) 
   (check (set-frame-transfer-mode* 0))
   (set-fastest-hs-speed)
   (set-trigger-mode 'internal)
@@ -54,7 +60,9 @@
 
 #+nil 
 (check ;; turn laser on constantly
- (set-shutter* 1 1 0 1))
+ (set-shutter* 1 
+	       1 ;; open 
+	       0 1))
 
 #+nil
 (get-temperature-f*)
@@ -62,17 +70,7 @@
 #+nil
 (get-size-of-circular-buffer*)
 
-
 #+nil
-(let ((buf (make-array (list 10 *w* *h*)
-		       :element-type '(unsigned-byte 16))))
-  #+nil(start-acquisition)
-  #+nil(check
-   (wait-for-acquisition-time-out* 1200))
-  (format t "~a~%" (list (get-internal-real-time) 
-			 (get-all-images16 :arr buf)))
-  (setf *bla* buf)
-  nil)
 (defun write-mma-disk (&key (cx 0) (cy 0) (r 1s0))
   ;; write a picture on mma
  (let* ((n 256)
@@ -100,7 +98,17 @@
 #+nil
 (start-acquisition)
 #+nil
-(save-as-fits* "/dev/shm/o.fits" 0)
+(check
+ (save-as-fits* "/dev/shm/o.fits" 0))
+#+nil
+(let ((buf (make-array (list *w* *h*)
+			:element-type '(unsigned-byte 16))))
+  (sb-sys:with-pinned-objects (buf)
+    (let* ((buf1 (sb-ext:array-storage-vector buf))
+	  (buf-sap (sb-sys:vector-sap buf1)))
+      (get-oldest-image16* buf-sap (* *w* *h*))))
+  (setf *bla* buf)
+  nil)
 
 #+nil
 (loop for i from 0 below 10 do
