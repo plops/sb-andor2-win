@@ -29,6 +29,11 @@
 (defparameter *h* 1040)
 
 #+nil
+(progn
+  (defparameter *w* 512)
+  (defparameter *h* 512))
+
+#+nil
 (get-detector)
 
 #+nil
@@ -65,7 +70,8 @@
 	       0 1))
 
 #+nil
-(get-temperature-f*)
+(list (get-universal-time)
+ (cadr (multiple-value-list (get-temperature-f*))))
 
 #+nil
 (get-size-of-circular-buffer*)
@@ -102,11 +108,11 @@
  (save-as-fits* "/dev/shm/o.fits" 0))
 #+nil
 (let ((buf (make-array (list *w* *h*)
-			:element-type '(unsigned-byte 16))))
+		       :element-type '(unsigned-byte 16))))
   (sb-sys:with-pinned-objects (buf)
     (let* ((buf1 (sb-ext:array-storage-vector buf))
-	  (buf-sap (sb-sys:vector-sap buf1)))
-      (get-oldest-image16* buf-sap (* *w* *h*))))
+	   (buf-sap (sb-sys:vector-sap buf1)))
+      (get-most-recent-image16* buf-sap (* *w* *h*))))
   (setf *bla* buf)
   nil)
 

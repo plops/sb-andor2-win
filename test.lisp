@@ -149,14 +149,14 @@
 	
 	(gl:matrix-mode gl:+color+)
 	(gl:load-identity)
-	(gl:scale-f 10 1 1)
-	(gl:translate-f (- (/ 534s0 (expt 2 16))) 0 0)
+	(gl:scale-f 100 1 1)
+	(gl:translate-f (- (/ 500s0 (expt 2 16))) 0 0)
 	
 	(gl:matrix-mode gl:+modelview+)
 	(when img
-	 (destructuring-bind (z h w) (array-dimensions img)
+	 (destructuring-bind (h w) (array-dimensions img)
 	   (sb-sys:with-pinned-objects (img)
-	     (gl:tex-image-2d gl:+texture-2d+ 0 gl:+luminance+ w h 0
+	     (gl:tex-image-2d gl:+texture-2d+ 0 gl:+luminance+ h w 0
 			      gl:+luminance+ gl:+unsigned-short+
 			      (sb-sys:vector-sap 
 			       (sb-ext:array-storage-vector img))))))
@@ -171,7 +171,7 @@
 
 	(gl:with-begin gl:+quads+
 	  (dotimes (j h)
-	    (let ((d 0 ; -.1s0
+	    (let ((d 0s0 ; -.1s0
 		    ))
 	      (dotimes (i w)
 		(labels ((c (a b)
