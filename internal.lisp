@@ -14,6 +14,16 @@
 #+nil
 (is-cooler-on*)
 
+#+nil
+(shut-down*)
+#+nil
+(unload-shared-object *andor2-lib*)
+
+#+nil
+(load-shared-object *andor2-lib*)
+
+;; one can check in sb-alien::*shared-objects*
+;; for loaded shared libraries
 
 #+nil
 (time
@@ -321,7 +331,6 @@ is already allocated and can contain more data than needed)."
 
 #+nil
 (set-trigger-mode)
-
 
 (defun get-maximum-binning (&optional (mode 'image))
   (let ((m (ecase mode
