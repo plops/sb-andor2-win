@@ -49,14 +49,14 @@
 #+nil
 (progn ;; kinetics series 
   (set-acquisition-mode
-    'run-till-abort
+   #+nil 'run-till-abort
    #+nil 'single-scan 
-   #+nil 'kinetics)
+   'kinetics)
   (set-exposure-time .02)
   (check (set-number-accumulations* 1))
   ;; (check (set-accumulation-cycle-time* .2))
   (check (set-kinetic-cycle-time* .06f0))
-  ;(check (set-number-kinetics* 19))
+  (check (set-number-kinetics* 1))
   (set-read-mode 'image)
   (set-vs-speed)
   ;; Note: there is a 10us gap in SHUTTER before FIRE starts
@@ -110,32 +110,46 @@
 #+nil
 (write-mma-disk :cx 12 :cy 0 :r .2)
 #+nil
-(forthdd::forthdd-talk #x23 (list 34))
+(forthdd::forthdd-talk #x23 (list 10))
 #+nil
 (start-acquisition)
 #+nil
 (check
  (save-as-fits* "/dev/shm/o.fits" 0))
 #+nil
-(let ((buf (make-array (list *w* *h*)
-		       :element-type '(unsigned-byte 16))))
-  (sb-sys:with-pinned-objects (buf)
-    (let* ((buf1 (sb-ext:array-storage-vector buf))
-	   (buf-sap (sb-sys:vector-sap buf1)))
-      (get-most-recent-image16* buf-sap (* *w* *h*))))
-  (setf *bla* buf)
-  nil)
+(dotimes (i 100)
+  (sleep .1)
+ (progn
+   (start-acquisition)
+   (wait-for-acquisition*)
+   (let ((buf (make-array (list *w* *h*)
+			  :element-type '(unsigned-byte 16))))
+     (sb-sys:with-pinned-objects (buf)
+       (let* ((buf1 (sb-ext:array-storage-vector buf))
+	      (buf-sap (sb-sys:vector-sap buf1)))
+	 (get-most-recent-image16* buf-sap (* *w* *h*))))
+     (setf *bla* buf)
+     nil)))
 
 #+nil
-(loop for i from 0 below 10 do
-     (write-mma-disk :cx (- (* 25 i) 128) :cy 0 :r .2)
+(loop for i from 0 below 103 do
+     ;;(write-mma-disk :cx (- (* 25 i) 128) :cy 0 :r .2)
      (forthdd::forthdd-talk #x23 (list i))
+     (sleep .03)
      (start-acquisition)
-     (sleep .2)
-     (save-as-fits* (format nil "/dev/shm/o~3,'0d.fits" i) 0))
-
+     (sleep .5)
+     (wait-for-acquisition*)
+     (format t "~a~%" i)
+     (save-as-fits* (format nil "/dev/shm/o~3,'0d.fits" i) 0)
+     (check
+       (free-internal-memory*)))
 #+nil
-(abort-acquisition)
+(dotimes (i 30)
+  (start-acquisition)
+  (sleep .3))
+#+nil
+(check
+ (abort-acquisition*))
 #+nil
 (get-number-available-images*)
 #+nil

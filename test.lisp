@@ -149,7 +149,7 @@
 	
 	(gl:matrix-mode gl:+color+)
 	(gl:load-identity)
-	(gl:scale-f 100 1 1)
+	(gl:scale-f 400 1 1)
 	(gl:translate-f (- (/ 500s0 (expt 2 16))) 0 0)
 	
 	(gl:matrix-mode gl:+modelview+)
