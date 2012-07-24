@@ -1,7 +1,8 @@
 #+nil
 (setf asdf:*central-registry* 
-      #+win64 '("C:/Users/martin/Desktop/tmp/sb-andor2-win/")
+      #+(and win32 x86-64) '("C:/Users/martin/Desktop/stage/sb-andor2-win/")
       #+linux '("~/stage/sb-andor2-win/"))
+(declaim (optimize (debug 3)))
 #+nil
 (require :sb-andor2-win)
 
@@ -149,7 +150,7 @@
 	
 	(gl:matrix-mode gl:+color+)
 	(gl:load-identity)
-	(gl:scale-f 400 1 1)
+	(gl:scale-f 10 1 1)
 	(gl:translate-f (- (/ 500s0 (expt 2 16))) 0 0)
 	
 	(gl:matrix-mode gl:+modelview+)

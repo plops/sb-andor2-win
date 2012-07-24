@@ -9,7 +9,8 @@
 
 (defun initialize ()
  (check
-  (initialize* "/usr/local/etc/andor")))
+  (initialize* #+(and win32 x86-64) ""
+	       #+linux "/usr/local/etc/andor")))
 
 #+nil
 (is-cooler-on*)
@@ -45,6 +46,27 @@
 
 #+nil
 (get-detector)
+
+#+nil
+(set-exposure-time 1.0)
+#+nil
+(prepare-acquisition*)
+#+nil
+(set-acquisition-mode
+   #+nil 'run-till-abort
+   #+nil 'single-scan 
+   'single-scan)
+
+
+
+#+nil
+(loop for i in '(internal internal internal external external) do
+     ;(set-image :xstart 1 :ystart 1 :xend 128 :yend i)
+     ;(set-exposure-time (* 1s0 i))
+     (set-trigger-mode i)
+     (prepare-acquisition*))
+
+
 
 #+nil
 (progn ;; kinetics series 
@@ -119,17 +141,18 @@
 #+nil
 (dotimes (i 100)
   (sleep .1)
- (progn
-   (start-acquisition)
-   (wait-for-acquisition*)
-   (let ((buf (make-array (list *w* *h*)
-			  :element-type '(unsigned-byte 16))))
-     (sb-sys:with-pinned-objects (buf)
-       (let* ((buf1 (sb-ext:array-storage-vector buf))
-	      (buf-sap (sb-sys:vector-sap buf1)))
-	 (get-most-recent-image16* buf-sap (* *w* *h*))))
-     (setf *bla* buf)
-     nil)))
+  (progn
+    (start-acquisition)
+    (wait-for-acquisition*)
+    (let ((buf (make-array (list *w* *h*)
+			   :element-type '(unsigned-byte 16))))
+      (sb-sys:with-pinned-objects (buf)
+	(let* ((buf1 (sb-ext:array-storage-vector buf))
+	       (buf-sap (sb-sys:vector-sap buf1)))
+	  (get-most-recent-image16* buf-sap (* *w* *h*))))
+      (setf *bla* buf)
+      (free-internal-memory*)
+      nil)))
 
 #+nil
 (loop for i from 0 below 103 do
@@ -157,6 +180,11 @@
 #+nil
 (check
  (free-internal-memory*))
+#+nil
+(progn
+  (start-acquisition)
+  (wait-for-acquisition*)
+  (check (free-internal-memory*)))
 
 ;; 1125/camgui.py
 (defun get-all-images16 (&key arr)
@@ -201,6 +229,7 @@ is already allocated and can contain more data than needed)."
   (when (eq 'drv_acquiring (get-status))
     (check (abort-acquisition*))))
 
+#+nil
 (defun get-capabilities ()
  (with-alien ((c (struct andorcaps)))
    (let ((p (addr c)))
@@ -306,7 +335,7 @@ is already allocated and can contain more data than needed)."
 
 #+nil
 (set-fastest-hs-speed)
-
+#+nil
 (defun set-baseline-clamp ()
   (let* ((caps (get-capabilities))
 	 (base-p (/= 0 (logand (getf caps 'set) 
@@ -316,7 +345,7 @@ is already allocated and can contain more data than needed)."
 
 #+nil
 (set-baseline-clamp)
-
+#+nil
 (defun shutdown () ;; for classic and iccd systems the temperature
   ;; should be above -20 degree before shutting down but I don't have
   ;; those
