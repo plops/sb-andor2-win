@@ -1,6 +1,6 @@
 #+nil
 (setf asdf:*central-registry* 
-      #+(and win32 x86-64) '("C:/Users/martin/Desktop/stage/sb-andor2-win/")
+      #+(and win32 x86-64) '("C:/Users/martin/stage/sb-andor2-win/")
       #+linux '("~/stage/sb-andor2-win/"))
 (declaim (optimize (debug 3)))
 #+nil

@@ -1,6 +1,6 @@
 (in-package :sb-andor2-win-internal)
 (defparameter *andor2-lib* 
-  #+(and x86-64 win32)  (load-shared-object "atmcd64d.dll")
+  #+(and x86-64 win32)  (load-shared-object "C:/Program Files/Andor SOLIS/drivers/atmcd64d.dll")
   #+linux (load-shared-object "/usr/local/lib/libandor.so.2.91.30001.0"))
 (DEFCONSTANT AT_DDGLITE_CONTROLBIT_GLOBALENABLE 1)
 (DEFCONSTANT AT_DDGLITE_CONTROLBIT_CHANNELENABLE 1)
