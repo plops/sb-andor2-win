@@ -333,6 +333,27 @@ is already allocated and can contain more data than needed)."
       (check (set-hs-speed* conv-p fast-ind))
       stemp)))
 
+(defun set-slowest-hs-speed (&key em)
+  (let ((conv-p (if em 0 1)))
+    (let ((stemp 0s0)
+	  (fast-ad 0)
+	  (fast-ind 0))
+      (with-alien ((channels int)
+		   (ind int)
+		   (speed float))
+	(check (get-number-ad-channels* (addr channels)))
+	(dotimes (c channels)
+	  (check (get-number-hs-speeds* c conv-p (addr ind)))
+	  (dotimes (i ind)
+	    (check (get-hs-speed* c conv-p i (addr speed)))
+	    (when (< speed stemp)
+	      (setf stemp speed
+		    fast-ad c
+		    fast-ind i)))))
+      (check (set-ad-channel* fast-ad))
+      (check (set-hs-speed* conv-p fast-ind))
+      stemp)))
+
 #+nil
 (set-fastest-hs-speed)
 #+nil
